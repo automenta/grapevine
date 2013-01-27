@@ -13,7 +13,9 @@
   },
   "main": "src/gossip.js",
   "dependencies": {
-    "msgpack2": "0.1.x"
+    "msgpack2": "0.1.x",
+    "request": "2.12.x",
+    "async": "0.1.x"
   },
   "devDependencies": {
     "mocha": "1.8.x",
