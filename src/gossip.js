@@ -3,11 +3,11 @@ var PeerState     = require('./peer_state').PeerState,
     EventEmitter  = require('events').EventEmitter,
     net           = require('net'),
     util          = require('util'),
-    child_process = require('child_process'),
+    os            = require('os'),
     dns           = require('dns'),
     msgpack       = require('msgpack2');
 
-var Gossiper = exports.Gossiper = function(port, seeds, ip_to_bind) {
+var gossip = function(port, seeds, ip_to_bind) {
   EventEmitter.call(this);
   this.peers    = {};
   this.ip_to_bind     = ip_to_bind;
@@ -19,9 +19,14 @@ var Gossiper = exports.Gossiper = function(port, seeds, ip_to_bind) {
   this.handleNewPeers(seeds);
 }
 
-util.inherits(Gossiper, EventEmitter);
+util.inherits(gossip, EventEmitter);
 
-Gossiper.prototype.start = function(callback) {
+module.exports = function (port, seeds, ip_to_bind) {
+  return new gossip(port, seeds, ip_to_bind)
+}
+
+
+gossip.prototype.start = function(callback) {
   var self = this;
 
   // Create Server
@@ -40,15 +45,11 @@ Gossiper.prototype.start = function(callback) {
     // this is an ugly hack to get the hostname of the local machine
     // we don't listen on any ip because it's important that we listen
     // on the same ip that the server identifies itself as
-    child_process.exec('hostname', function(error, stdout, stderr) {
-      var l = stdout.length;
-      var hostname = stdout.slice(0, l - 1);
-      dns.lookup(hostname, 4, function(err,address, family) {
-        self.peer_name    = [address, self.port.toString()].join(':');
-        self.peers[self.peer_name] = self.my_state;
-        self.my_state.name = self.peer_name;
-        self.server.listen(self.port, address, callback);
-      });
+    dns.lookup(os.hostname(), 4, function(err,address, family) {
+      self.peer_name    = [address, self.port.toString()].join(':');
+      self.peers[self.peer_name] = self.my_state;
+      self.my_state.name = self.peer_name;
+      self.server.listen(self.port, address, callback);
     });
   }
 
@@ -57,7 +58,7 @@ Gossiper.prototype.start = function(callback) {
   this.gossipTimer = setInterval(function() { self.gossip() }, 1000);
 }
 
-Gossiper.prototype.stop = function() {
+gossip.prototype.stop = function() {
   this.server.close();
   clearInterval(this.heartBeatTimer);
   clearInterval(this.gossipTimer);
@@ -67,7 +68,7 @@ Gossiper.prototype.stop = function() {
 // The method of choosing which peer(s) to gossip to is borrowed from Cassandra.
 // They seemed to have worked out all of the edge cases
 // http://wiki.apache.org/cassandra/ArchitectureGossip
-Gossiper.prototype.gossip = function() {
+gossip.prototype.gossip = function() {
   // Find a live peer to gossip to
   if(this.livePeers().length > 0) {
     var live_peer = this.chooseRandom(this.livePeers());
@@ -97,13 +98,13 @@ Gossiper.prototype.gossip = function() {
   }
 }
 
-Gossiper.prototype.chooseRandom = function(peers) {
+gossip.prototype.chooseRandom = function(peers) {
   // Choose random peer to gossip to
   var i = Math.floor(Math.random()*1000000) % peers.length;
   return peers[i];
 }
 
-Gossiper.prototype.gossipToPeer = function(peer) {
+gossip.prototype.gossipToPeer = function(peer) {
   var a = peer.split(":");
   var gosipee = new net.createConnection(a[1], a[0]);
   var self = this;
@@ -117,21 +118,21 @@ Gossiper.prototype.gossipToPeer = function(peer) {
   });
 }
 
-Gossiper.REQUEST          = 0;
-Gossiper.FIRST_RESPONSE   = 1;
-Gossiper.SECOND_RESPONSE  = 2;
+gossip.REQUEST          = 0;
+gossip.FIRST_RESPONSE   = 1;
+gossip.SECOND_RESPONSE  = 2;
 
-Gossiper.prototype.handleMessage = function(net_stream, mp_stream, msg) {
+gossip.prototype.handleMessage = function(net_stream, mp_stream, msg) {
   switch(msg.type) {
-    case Gossiper.REQUEST:
+    case gossip.REQUEST:
       mp_stream.send(this.firstResponseMessage(msg.digest));
       break;
-    case Gossiper.FIRST_RESPONSE:
+    case gossip.FIRST_RESPONSE:
       this.scuttle.updateKnownState(msg.updates);
       mp_stream.send(this.secondResponseMessage(msg.request_digest));
       net_stream.end();
       break;
-    case Gossiper.SECOND_RESPONSE:
+    case gossip.SECOND_RESPONSE:
       this.scuttle.updateKnownState(msg.updates);
       net_stream.end();
       break;
@@ -144,7 +145,7 @@ Gossiper.prototype.handleMessage = function(net_stream, mp_stream, msg) {
 // MESSSAGES
 
 
-Gossiper.prototype.handleNewPeers = function(new_peers) {
+gossip.prototype.handleNewPeers = function(new_peers) {
   var self = this;
   for(var i in new_peers) {
     var peer_name = new_peers[i];
@@ -156,7 +157,7 @@ Gossiper.prototype.handleNewPeers = function(new_peers) {
   }
 }
 
-Gossiper.prototype.listenToPeer = function(peer) {
+gossip.prototype.listenToPeer = function(peer) {
   var self = this;
   peer.on('update', function(k,v) {
     self.emit('update', peer.name, k, v);
@@ -169,62 +170,62 @@ Gossiper.prototype.listenToPeer = function(peer) {
   });
 }
 
-Gossiper.prototype.requestMessage = function() {
+gossip.prototype.requestMessage = function() {
   var m = {
-    'type'    : Gossiper.REQUEST,
+    'type'    : gossip.REQUEST,
     'digest'  : this.scuttle.digest(),
   };
   return m;
 };
 
-Gossiper.prototype.firstResponseMessage = function(peer_digest) {
+gossip.prototype.firstResponseMessage = function(peer_digest) {
   var sc = this.scuttle.scuttle(peer_digest)
   this.handleNewPeers(sc.new_peers);
   var m = {
-    'type'            : Gossiper.FIRST_RESPONSE,
+    'type'            : gossip.FIRST_RESPONSE,
     'request_digest'  : sc.requests,
     'updates'         : sc.deltas
   };
   return m;
 };
 
-Gossiper.prototype.secondResponseMessage = function(requests) {
+gossip.prototype.secondResponseMessage = function(requests) {
   var m = {
-    'type'    : Gossiper.SECOND_RESPONSE,
+    'type'    : gossip.SECOND_RESPONSE,
     'updates' : this.scuttle.fetchDeltas(requests)
   };
   return m;
 };
 
-Gossiper.prototype.setLocalState = function(k, v) {
+gossip.prototype.setLocalState = function(k, v) {
   this.my_state.updateLocal(k,v);
 }
 
-Gossiper.prototype.getLocalState = function(k) {
+gossip.prototype.getLocalState = function(k) {
   return this.my_state.getValue(k);
 }
 
-Gossiper.prototype.peerKeys = function(peer) {
+gossip.prototype.peerKeys = function(peer) {
   return this.peers[peer].getKeys();
 }
 
-Gossiper.prototype.peerValue = function(peer, k) {
+gossip.prototype.peerValue = function(peer, k) {
   return this.peers[peer].getValue(k);
 }
 
-Gossiper.prototype.allPeers = function() {
+gossip.prototype.allPeers = function() {
   var keys = [];
   for(var k in this.peers) { keys.push(k) };
   return keys;
 }
 
-Gossiper.prototype.livePeers = function() {
+gossip.prototype.livePeers = function() {
   var keys = [];
   for(var k in this.peers) { if(this.peers[k].alive) { keys.push(k)} };
   return keys;
 }
 
-Gossiper.prototype.deadPeers = function() {
+gossip.prototype.deadPeers = function() {
   var keys = [];
   for(var k in this.peers) { if(!this.peers[k].alive) { keys.push(k) } };
   return keys;
