@@ -1,6 +1,6 @@
 var AccrualFailureDetector  = require('./accrual_failure_detector').AccrualFailureDetector,
     EventEmitter            = require('events').EventEmitter,
-    util                    = require('util'); 
+    util                    = require('util');
 
 var PeerState = exports.PeerState = function(name) {
   EventEmitter.call(this);
@@ -45,7 +45,7 @@ PeerState.prototype.getValue = function(k) {
 
 PeerState.prototype.getKeys = function() {
   var keys = [];
-  for(k in this.attrs) { keys.push(k) };
+  for(var k in this.attrs) { keys.push(k) };
   return keys;
 }
 
@@ -60,8 +60,8 @@ PeerState.prototype.beatHeart = function() {
 }
 
 PeerState.prototype.deltasAfterVersion = function(lowest_version) {
-  deltas = []
-  for(k in this.attrs) {
+  var deltas = []
+  for(var k in this.attrs) {
     var value   = this.attrs[k][0];
     var version = this.attrs[k][1];
     if(version > lowest_version) {

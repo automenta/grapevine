@@ -1,11 +1,11 @@
 var PeerState     = require('./peer_state').PeerState,
     Scuttle       = require('./scuttle').Scuttle,
     EventEmitter  = require('events').EventEmitter,
-    net           = require('net'), 
+    net           = require('net'),
     util          = require('util'),
     child_process = require('child_process'),
     dns           = require('dns'),
-    msgpack       = require('msgpack'); 
+    msgpack       = require('msgpack2');
 
 var Gossiper = exports.Gossiper = function(port, seeds, ip_to_bind) {
   EventEmitter.call(this);
@@ -38,7 +38,7 @@ Gossiper.prototype.start = function(callback) {
     this.server.listen(this.port, this.ip_to_bind, callback);
   } else {
     // this is an ugly hack to get the hostname of the local machine
-    // we don't listen on any ip because it's important that we listen 
+    // we don't listen on any ip because it's important that we listen
     // on the same ip that the server identifies itself as
     child_process.exec('hostname', function(error, stdout, stderr) {
       var l = stdout.length;

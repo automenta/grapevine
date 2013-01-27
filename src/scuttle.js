@@ -6,7 +6,7 @@ var Scuttle = exports.Scuttle = function(peers, local_peer) {
 
 Scuttle.prototype.digest = function() {
   var digest = {};
-  for(i in this.peers) {
+  for(var i in this.peers) {
     var p = this.peers[i];
     digest[i] = p.max_version_seen;
   }
@@ -43,7 +43,7 @@ Scuttle.prototype.scuttle = function(digest) {
   deltas_with_peer.sort( function(a,b) { return b.deltas.length - a.deltas.length } );
 
   var deltas = [];
-  for(i in deltas_with_peer) {
+  for(var i in deltas_with_peer) {
     var peer = deltas_with_peer[i];
     var peer_deltas = peer.deltas;
 
@@ -52,14 +52,14 @@ Scuttle.prototype.scuttle = function(digest) {
     if(peer_deltas.length > 1) {
     //  console.log(peer_deltas);
     }
-    for(j in peer_deltas) {
+    for(var j in peer_deltas) {
       var delta = peer_deltas[j];
       delta.unshift(peer.peer);
       deltas.push(delta);
     }
   }
 
-  return {  'deltas' : deltas, 
+  return {  'deltas' : deltas,
             'requests' : requests,
             'new_peers' : new_peers };
 }
@@ -73,7 +73,7 @@ Scuttle.prototype.maxVersionSeenForPeer = function(peer) {
 }
 
 Scuttle.prototype.updateKnownState = function(deltas) {
-  for(i in deltas) {
+  for(var i in deltas) {
     var d = deltas[i];
 
     var peer_name  = d.shift();
@@ -84,7 +84,7 @@ Scuttle.prototype.updateKnownState = function(deltas) {
 
 Scuttle.prototype.fetchDeltas = function(requests) {
   var deltas = []
-  for(i in requests) {
+  for(var i in requests) {
     var peer_deltas = this.peers[i].deltasAfterVersion(requests[i]);
     peer_deltas.sort(function(a,b) { return a[2] - b[2]; });
     for(j in peer_deltas) {
