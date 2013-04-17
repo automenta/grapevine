@@ -1,6 +1,6 @@
 {
   "name": "gossip",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "gossip protocol",
   "author": "Bob Potter <bobby.potter@gmail.com>",
   "contributors": [
@@ -15,10 +15,14 @@
   "dependencies": {
     "msgpack2": "0.1.x",
     "request": "2.12.x",
-    "async": "0.1.x"
+    "async": "0.1.x",
+    "debug": "~0.7.0",
+    "underscore": "~1.4.4",
+    "lodash": "~1.2.0"
   },
   "devDependencies": {
     "mocha": "1.8.x",
-    "chai": "1.4.x"
+    "chai": "1.4.x",
+    "istanbul": "~0.1.34"
   }
 }

@@ -1,232 +1,344 @@
-var PeerState     = require('./peer_state').PeerState,
-    Scuttle       = require('./scuttle').Scuttle,
-    EventEmitter  = require('events').EventEmitter,
-    net           = require('net'),
-    util          = require('util'),
-    os            = require('os'),
-    dns           = require('dns'),
-    msgpack       = require('msgpack2');
+/**
+ * Gossipe Protocol
+ * @module gossip
+ */
 
-var gossip = function(port, seeds, ip_to_bind) {
-  EventEmitter.call(this);
-  this.peers    = {};
-  this.ip_to_bind     = ip_to_bind;
-  this.port     = port;
-  this.seeds    = seeds;
-  this.my_state = new PeerState();
-  this.scuttle  = new Scuttle(this.peers, this.my_state);
+var compact = require('lodash').compact,
+    scuttle = require('./scuttle'),
+    msgpack = require('msgpack2'),
+    state = require('./state'),
+    util = require('util'),
+    net = require('net'),
+    dns = require('dns'),
+    os = require('os')
 
-  this.handleNewPeers(seeds);
+var noop = function () {}
+var SECOND_RESPONSE = 'SECOND_RESPONSE'
+var FIRST_RESPONSE = 'FIRST_RESPONSE'
+var REQUEST = 'REQUEST'
+
+
+
+/**
+ * @constructor
+ * @param {Array} seeds
+ * @param {String} host
+ */
+var gossip = function (seeds, host) {
+  this.state = state(null, true)
+  this.hostname = hostname
+  this.seeds = seeds
+  this.timers = {}
+  this.peers = {}
+  
+  this.scuttle = scuttle(this.peers, this.state)
 }
 
-util.inherits(gossip, EventEmitter);
-
-module.exports = function (port, seeds, ip_to_bind) {
-  return new gossip(port, seeds, ip_to_bind)
-}
-
-
-gossip.prototype.start = function(callback) {
-  var self = this;
-
+/**
+ * Start the server
+ * @param {Function} callback
+ * @returns {gossip}
+ */
+gossip.prototype.start = function (callback) {
   // Create Server
-  this.server = net.createServer(function (net_stream) {
-    var mp_stream = new msgpack.Stream(net_stream);
-    mp_stream.on('msg', function(msg) { self.handleMessage(net_stream, mp_stream, msg) });
-  });
+  this.server = net.createServer(this.listener.bind(this))
+  // if the host opt is defined, bind to that host
+  if(this.hostname) return this.server.listen(0, this.hostname, this.listening.bind(this, callback))
+  // if there is no host defined, find the network ip and bind to that
+  dns.lookup(os.hotname(), 4, function (e, hostname) {
+    if(e) return callback(e)
+    this.server.listen(0, hostname, this.listening.bind(this, callback))
+  }.bind(this))
 
-  // Bind to ip/port
-  if(this.ip_to_bind) {
-    this.peer_name    = [this.address, this.port.toString()].join(':');
-    this.peers[this.peer_name] = this.my_state;
-    this.my_state.name = this.peer_name;
-    this.server.listen(this.port, this.ip_to_bind, callback);
-  } else {
-    // this is an ugly hack to get the hostname of the local machine
-    // we don't listen on any ip because it's important that we listen
-    // on the same ip that the server identifies itself as
-    dns.lookup(os.hostname(), 4, function(err,address, family) {
-      self.peer_name    = [address, self.port.toString()].join(':');
-      self.peers[self.peer_name] = self.my_state;
-      self.my_state.name = self.peer_name;
-      self.server.listen(self.port, address, callback);
-    });
-  }
-
-  this.handleNewPeers(this.seeds);
-  this.heartBeatTimer = setInterval(function() { self.my_state.beatHeart() }, 1000 );
-  this.gossipTimer = setInterval(function() { self.gossip() }, 1000);
+  return this
 }
 
-gossip.prototype.stop = function() {
-  this.server.close();
-  clearInterval(this.heartBeatTimer);
-  clearInterval(this.gossipTimer);
+/**
+ * Callback for the net.CreateServer().listen
+ * @access private
+ * @param {Function} callback
+ * @returns {gossip}
+ */
+gossip.prototype.listening = function (callback) {
+  this.address = this.server.address().address
+  this.port = this.server.address().port
+  this.name = [this.address, this.port.toString()].join(':')
+  this.state.name = this.name
+  
+  this.handleNewPeers(this.seeds)
+  this.timers.beat = setInterval(this.state.beat.bind(this.state), 1000)
+  this.timers.gossip = setInterval(this.gossip.bind(this), 1000)
+  
+  callback(null, this)
+  return this
 }
 
+/**
+ * net.Server connection listener
+ * @access private
+ * @param {Function} callback
+ */
+gossip.prototype.listener = function (connection) {
+  var msgpackstream = new msgpack.Stream(stream)
+  
+  msgpackstream.on('msg', function (msg) {
+    this.handleMessage(stream, msgpackstream, msg)
+  }.bind(this))
+}
 
-// The method of choosing which peer(s) to gossip to is borrowed from Cassandra.
-// They seemed to have worked out all of the edge cases
-// http://wiki.apache.org/cassandra/ArchitectureGossip
-gossip.prototype.gossip = function() {
+/**
+ * Stop the net.Server and don't gossip anymore
+ * @returns {gossip}
+ */
+gossip.prototype.stop = function () {
+  this.server.close()
+  Object.keys(this.timers).forEach(function (timer) {
+    clearInterval(this.timers[timer])
+  }.bind(this))
+  return this
+}
+
+/**
+ * timers.gossip intervall handler
+ *
+ * The method of choosing which peer(s) to gossip to is borrowed from Cassandra.
+ * They seemed to have worked out all of the edge cases: http://wiki.apache.org/cassandra/ArchitectureGossip
+ * @access private
+ */
+gossip.prototype.gossip = function () {
+  var allPeers = Object.keys(this.peers)
+  var livePeers = this.livePeers()
+  var deadPeers = this.deadPeers()
+  var livePeer = this.random(livePeers)
+  var deadPeer = this.random(deadPeers)
+  var constrained = true
+  
   // Find a live peer to gossip to
-  if(this.livePeers().length > 0) {
-    var live_peer = this.chooseRandom(this.livePeers());
-    this.gossipToPeer(live_peer);
-  }
-
+  if(livePeer) this.gossipToPeer(livePeer)
+  
   // Possilby gossip to a dead peer
-  var prob = this.deadPeers().length / (this.livePeers().length + 1)
-  if(Math.random() < prob) {
-    var dead_peer = this.chooseRandom(this.deadPeers());
-    this.gossipToPeer(dead_peer);
-  }
+  var probability = deadPeers.length / (livePeers.length + 1)
+  if(deadPeer && (Math.random() < probability)) this.gossipToPeer(deadPeer)
+  
+  // Gossip to seed under certain conditions:
+  // * there is at least a live peer
+  // * the choosen live peer is not a seed
+  // * the number of livePeers is smaller than the number of seeds
+  constrained = !(livePeer && !this.seeds[livePeer] && livePeers.length < this.seeds.length)
+  constrained = !(constrained && Math.random() < (this.seeds.length / allPeers.length))
+  if(!constrained) this.gossipToPeer(this.random(this.seeds))
 
-  // Gossip to seed under certain conditions
-  if(live_peer && !this.seeds[live_peer] && this.livePeers().length < this.seeds.length) {
-    if(Math.random() < (this.seeds / this.allPeers.size())) {
-      this.gossipToPeer(chooseRandom(this.peers));
+  // Check health of all peers
+  allPeers.forEach(function (name) {
+    var peer = this.peers[name]
+    if(peer.name !== this.state.name) peer.suspect()
+  }.bind(this))
+}
+
+/**
+ * choose a random peer
+ * @param {Array} peers
+ * @returns {String}
+ */
+gossip.prototype.random = function (peers) {
+  return peers[Math.floor(Math.random()*1000000) % peers.length];
+}
+
+/**
+ * gossip to peer
+ * @access private
+ * @param {String} peer
+ */
+gossip.prototype.gossipToPeer = function (peer) {
+  var adress = peer.split(':')
+  var connection = new net.createConnection(a[1], a[0])
+  
+  connection.on('connect', function (stream) {
+    var msgpackstream = new msgpack.Stream(stream)
+    
+    msgpackstream.on('msg', function (msg) {
+      gossip.prototype[msg.type](connection, msgpackstream, msg)
+    }.bind(this))
+    
+    msgpackstream.send(this.requestMessage())
+  }.bind(this))
+  
+  connection.on('error', function (e) {
+    //don't throw
+    throw e
+  })
+}
+
+/**
+ * RESQUEST
+ * @access private
+ * @param {Object} connection
+ * @param {Stream} msgpackstream
+ * @param {Number|Object|Array|Boolean} msg
+ */
+gossip.prototype[REQUEST] = function (connection, msgpackstream, msg) {
+  connection.send(this[FIRST_RESPONSE + 'message'](msg.digest))
+}
+
+/**
+ * FIRST_RESPONSE
+ * @access private
+ * @param {Object} connection
+ * @param {Stream} msgpackstream
+ * @param {Number|Object|Array|Boolean} msg
+ */
+gossip.prototype[FIRST_RESPONSE] = function (connection, msgpackstream, msg) {
+  this.scuttle.update(msg.updates)
+  connection.send(this[SECOND_RESPONSE + 'message'](msg.request_digest))
+  connection.end()
+}
+
+/**
+ * SECOND_RESPONSE
+ * @access private
+ * @param {Object} connection
+ * @param {Stream} msgpackstream
+ * @param {Number|Object|Array|Boolean} msg
+ */
+gossip.prototype[SECOND_RESPONSE] = function (connection, msgpackstream, msg) {
+  this.scuttle.update(msg.updates)
+  connection.end()
+}
+
+/**
+ * REQUESTmessage
+ * @access private
+ * @returns {Object}
+ */
+gossip.prototype[REQUEST + 'message'] = function () {
+  return {
+    digest: this.scuttle.digest(),
+    type: REQUEST
+  }
+}
+
+/**
+ * FIRST_RESPONSEmessage
+ * @access private
+ * @param {Object} digest
+ * @returns {Object}
+ */
+gossip.prototype[FIRST_RESPONSE + 'message'] = function (digest) {
+  var scuttle = this.scuttle.scuttle(digest)
+  this.handleNewPeers(scuttle.new_peers)
+  scuttle.type = FIRST_RESPONSE
+  return scuttle
+}
+
+/**
+ * SECOND_RESPONSEmessage
+ * @access private
+ * @param {Array} requests
+ * @returns {Object}
+ */
+gossip.prototype[SECOND_RESPONSE + 'message'] = function (requests) {
+  return {
+    type: SECOND_RESPONSE,
+    updates: this.scuttle.deltas(requests)
+  }
+}
+
+/**
+ * Handle new Peers
+ * @access private
+ * @param {Array} peers
+ */
+gossip.prototype.handleNewPeers = function (peers) {
+  peers.forEach(function (peer) {
+    this.peers[peer] = state(peer)
+    this.listenToPeer(this.peers[peer])
+    this.emit('new_peer', peer)
+  }.bind(this))
+}
+
+/**
+ * Add event listeners for a peer
+ * @access private
+ * @param {state} peer
+ */
+gossip.prototype.listenToPeer = function (peer) {
+  var emit = function (ev, self) {
+    return function () {
+      arguments = Array.prototype.unshift.call(arguments, ev, peer.name)
+      self.emit.apply(self, arguments)
     }
   }
-
-  // Check health of peers
-  for(var i in this.peers) {
-    var peer = this.peers[i];
-    if(peer != this.my_state) {
-      peer.isSuspect();
-    }
-  }
+  
+  peer.on('peer_failed', emit('peer_failed', this))
+  peer.on('peer_alive', emit('peer_alive', this))
+  peer.on('update', emit('update', this))
 }
 
-gossip.prototype.chooseRandom = function(peers) {
-  // Choose random peer to gossip to
-  var i = Math.floor(Math.random()*1000000) % peers.length;
-  return peers[i];
+/**
+ * Get/set a value of state attrs
+ * @param {String} key
+ * @param {Number|Object|Array|Boolean|Null|Undefined} value
+ * @returns {Number|Object|Array|Boolean|Null|Undefined}
+ */
+gossip.prototype.value = function (key, value) {
+  return this.state.value(key, value)
 }
 
-gossip.prototype.gossipToPeer = function(peer) {
-  var a = peer.split(":");
-  var gosipee = new net.createConnection(a[1], a[0]);
-  var self = this;
-  gosipee.on('connect', function(net_stream) {
-    var mp_stream = new msgpack.Stream(gosipee);
-    mp_stream.on('msg', function(msg) { self.handleMessage(gosipee, mp_stream, msg) });
-    mp_stream.send(self.requestMessage());
-  });
-  gosipee.on('error', function(exception) {
-//    console.log(self.peer_name + " received " + util.inspect(exception));
-  });
+/**
+ * Get the keys in a peer state
+ * @param {String} peer
+ * @returns {Array}
+ */
+gossip.prototype.peerKeys = function (peer) {
+  return this.peers[peer].keys()
 }
 
-gossip.REQUEST          = 0;
-gossip.FIRST_RESPONSE   = 1;
-gossip.SECOND_RESPONSE  = 2;
-
-gossip.prototype.handleMessage = function(net_stream, mp_stream, msg) {
-  switch(msg.type) {
-    case gossip.REQUEST:
-      mp_stream.send(this.firstResponseMessage(msg.digest));
-      break;
-    case gossip.FIRST_RESPONSE:
-      this.scuttle.updateKnownState(msg.updates);
-      mp_stream.send(this.secondResponseMessage(msg.request_digest));
-      net_stream.end();
-      break;
-    case gossip.SECOND_RESPONSE:
-      this.scuttle.updateKnownState(msg.updates);
-      net_stream.end();
-      break;
-    default:
-      // shit went bad
-      break;
-  }
+/**
+ * Get the value of a remote peer
+ * @param {String} peer
+ * @param {String} key
+ * @returns {Number|Object|Array|Boolean|Null|Undefined}
+ */
+gossip.prototype.peerValue = function (peer, key) {
+  return this.peers[peer].value(key)
 }
 
-// MESSSAGES
-
-
-gossip.prototype.handleNewPeers = function(new_peers) {
-  var self = this;
-  for(var i in new_peers) {
-    var peer_name = new_peers[i];
-    this.peers[peer_name] = new PeerState(peer_name);
-    this.emit('new_peer', peer_name);
-
-    var peer = this.peers[peer_name];
-    this.listenToPeer(peer);
-  }
+/**
+ * all peers that are identified as live
+ * @returns {Array}
+ */
+gossip.prototype.livePeers = function () {
+  return compact(Object.keys(this.peers).map(function (name) {
+    if(this.peers[name].alive) return name
+  }))
 }
 
-gossip.prototype.listenToPeer = function(peer) {
-  var self = this;
-  peer.on('update', function(k,v) {
-    self.emit('update', peer.name, k, v);
-  });
-  peer.on('peer_alive', function() {
-    self.emit('peer_alive', peer.name);
-  });
-  peer.on('peer_failed', function() {
-    self.emit('peer_failed', peer.name);
-  });
+/**
+ * all peers that are identified as dead
+ * @returns {Array}
+ */
+gossip.prototype.deadPeers = function () {
+  return compact(Object.keys(this.peers).map(function (name) {
+    if(!this.peers[name].alive) return name
+  }))
 }
 
-gossip.prototype.requestMessage = function() {
-  var m = {
-    'type'    : gossip.REQUEST,
-    'digest'  : this.scuttle.digest(),
-  };
-  return m;
-};
+util.inherits(gossip, require('events').EventEmitter)
 
-gossip.prototype.firstResponseMessage = function(peer_digest) {
-  var sc = this.scuttle.scuttle(peer_digest)
-  this.handleNewPeers(sc.new_peers);
-  var m = {
-    'type'            : gossip.FIRST_RESPONSE,
-    'request_digest'  : sc.requests,
-    'updates'         : sc.deltas
-  };
-  return m;
-};
 
-gossip.prototype.secondResponseMessage = function(requests) {
-  var m = {
-    'type'    : gossip.SECOND_RESPONSE,
-    'updates' : this.scuttle.fetchDeltas(requests)
-  };
-  return m;
-};
+/**
+ * @returns {gossip}
+ */
+module.exports = function () {
+  var seeds = new Array()
+  var hostname = false
+  var callback = noop
 
-gossip.prototype.setLocalState = function(k, v) {
-  this.my_state.updateLocal(k,v);
-}
+  Array.prototype.forEach.apply(arguments, function (argument) {
+    if(typeof argument === 'function') callback = argument
+    if(typeof argument === 'string') hostname = argument
+    if(Array.isArray(argument)) seeds = argument
+  })
 
-gossip.prototype.getLocalState = function(k) {
-  return this.my_state.getValue(k);
-}
-
-gossip.prototype.peerKeys = function(peer) {
-  return this.peers[peer].getKeys();
-}
-
-gossip.prototype.peerValue = function(peer, k) {
-  return this.peers[peer].getValue(k);
-}
-
-gossip.prototype.allPeers = function() {
-  var keys = [];
-  for(var k in this.peers) { keys.push(k) };
-  return keys;
-}
-
-gossip.prototype.livePeers = function() {
-  var keys = [];
-  for(var k in this.peers) { if(this.peers[k].alive) { keys.push(k)} };
-  return keys;
-}
-
-gossip.prototype.deadPeers = function() {
-  var keys = [];
-  for(var k in this.peers) { if(!this.peers[k].alive) { keys.push(k) } };
-  return keys;
+  return new gossip(seeds, hostname).start(callback)
 }
