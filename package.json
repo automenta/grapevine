@@ -2,8 +2,8 @@
   "name": "gossip",
   "version": "0.1.0",
   "description": "gossip protocol",
-  "author": "Bob Potter <bobby.potter@gmail.com>",
   "contributors": [
+    "Bob Potter <bobby.potter@gmail.com>",
     "Christopher Mooney <chris@dod.net>",
     "Sérgio Ramos <mail@sergioramos.me>"
   ],
@@ -13,16 +13,19 @@
   },
   "main": "src/gossip.js",
   "dependencies": {
-    "msgpack2": "0.1.x",
-    "request": "2.12.x",
-    "async": "0.1.x",
-    "debug": "~0.7.0",
-    "underscore": "~1.4.4",
-    "lodash": "~1.2.0"
+    "component-type": "git://github.com/component/type.git",
+    "gscuttle": "git://github.com/kordon/gscuttle.git",
+    "gstate": "git://github.com/kordon/gstate.git",
+    "eventemitter2": "0.4.x",
+    "darius": "0.1.x",
+    "puid": "0.4.x"
   },
   "devDependencies": {
-    "mocha": "1.8.x",
-    "chai": "1.4.x",
-    "istanbul": "~0.1.34"
+    "mocha-lcov-reporter": "0.0.x",
+    "jscoverage": "0.3.x",
+    "component": "0.16.x",
+    "coveralls": "2.0.x",
+    "mocha": "1.10.x",
+    "chai": "1.6.x"
   }
 }
