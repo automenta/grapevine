@@ -16,7 +16,7 @@ $ npm install ase
 ## example
 
 ```js
-vvar ase = require('./')
+var ase = require('./')
 
 var peer1 = ase(function (e) {
   if(e) throw e
