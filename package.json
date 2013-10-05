@@ -1,6 +1,6 @@
 {
   "name": "ase",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "gossip-like protocol to maintain a distributed network of peers",
   "keywords": [
     "gossip",
@@ -53,7 +53,7 @@
   "devDependencies": {
     "mocha-lcov-reporter": "0.0.x",
     "jscoverage": "0.3.x",
-    "coveralls": "2.1.x",
-    "mocha": "1.12.x"
+    "coveralls": "2.3.x",
+    "mocha": "1.13.x"
   }
 }
