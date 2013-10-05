@@ -5,6 +5,8 @@
 [![Dependency Status](https://gemnasium.com/kordon/ase.png)](https://gemnasium.com/kordon/ase)
 [![Coverage Status](https://coveralls.io/repos/kordon/ase/badge.png?branch=master)](https://coveralls.io/r/kordon/ase?branch=master)
 
+**ase** implements a gossip-like protocol with failure detection
+
 ## install
 
 ```bash
