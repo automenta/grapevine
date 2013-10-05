@@ -1,36 +1,107 @@
-var server = require('./server'),
+var propagate = require('propagate'),
+    interpolate = require('util').format,
+    type = require('component-type'),
     utils = require('./utils'),
-    state = require('gstate')
+    state = require('./state')
 
 
 /**
- * @param {Array} seeds
+ * Peers/Seeds hander
+ *
+ * @param {state} state
  */
-var peers = module.exports = function () {
-  if(!(this instanceof peers)) return new peers()
+var peers = module.exports = function (state) {
+  if(!(this instanceof peers)) return new peers(state)
   
-  this.peers = {}
+  this.state = state
   this.seeds = {}
+  this.peers = {}
 }
 
-require('util').inherits(peers, require('eventemitter2').EventEmitter2)
+require('util').inherits(peers, require('events').EventEmitter)
+
+/**
+ * Get all known identifications, including it's own
+ *
+ * @returns {array} identifications
+ */
+peers.prototype.idenfifications = function () {
+  return utils.values(this.peers).map(function (peer) {
+    return peer.identification()
+  }).concat(this.state.identification())
+}
+
+/**
+ * From an array of `identifications`, add the ones that are unknown
+ *
+ * @param {array} identifications
+ */
+peers.prototype.identify = function (identifications) {
+  this.push(identifications.map(function (identification) {
+    // FIX THIS (WHY THE PORT IS A STRING?)
+    identification.port = Number(identification.port)
+    if(!this.peers[identification.name]) return identification
+  }.bind(this)).filter(function (identification) {
+    return !!identification
+  }))
+}
+
+/**
+ * return all peers that we know about, but the other peer doesn't
+ *
+ * @param {array} identifications
+ * @returns {array} identifications
+ */
+peers.prototype.deltas = function (identifications) {
+  return utils.values(this.peers).filter(function (peer) {
+    return identifications.filter(function (identification) {
+      return identification.name === peer.name()
+    }).length === 0
+  })
+}
 
 /**
  * Get the names from all peers
  *
- * @param {Array} seeds
+ * @param {array} names
  */
 peers.prototype.names = function () {
   return utils.values(this.peers).map(function (peer) {
-    return peer.name
+    return peer.name()
+  })
+}
+
+/**
+ * Get the name with especified name
+ *
+ * @param {string} name
+ */
+peers.prototype.find = function (name) {
+  return utils.values(this.peers).filter(function (peer) {
+    return peer.name() === name
+  }).shift()
+}
+
+/**
+ * Get the ids from all peers
+ *
+ * @param {array} ids
+ */
+peers.prototype.ids = function () {
+  return utils.values(this.peers).map(function (peer) {
+    return peer.id()
   })
 }
 
 /**
  * choose a random peer
  *
- * @param {Array|Boolean} [peers]
- * @returns {String} host
+ *  * if an array is provided, then it chooses a random from that array
+ *  * if the no parameter is provided, it chooces a random from it's known peers
+ *  * if a boolean=true is provided, it chooces a random from it's known seeds
+ *
+ * @param {array|boolean} [peers|seeds]
+ * @returns {state}
  */
 peers.prototype.random = function (peers) {
   if(type(peers) === 'undefined') peers = this.peers
@@ -40,39 +111,40 @@ peers.prototype.random = function (peers) {
 }
 
 /**
- * Handle new Peers
- */
-peers.prototype.push = function (name, local, seed) {
-  this.peers[name] = state(name, local, seed)
-  //TODO: listen to state events
-  this.emit('new', this.peers[name])
-}
-
-/**
- * Get the keys in a peer state
+ * Handle new peers
+ * 
+ * it adds them to it's list of known peers, and subscribes to it's events
+ * it handles a single peer and an array of peers
  *
- * @param {String} name
- * @returns {Array}
+ * @param {array|state} [peers|seeds]
  */
-peers.prototype.keys = function (name) {
-  return this.peers[name].keys()
-}
-
-/**
- * Get the value of a peer
- *
- * @param {String} peer
- * @param {String} key
- * @returns {Any}
- */
-peers.prototype.value = function (name, key) {
-  return this.peers[peer].value(key)
+peers.prototype.push = function (peer) {
+  if(Array.isArray(peer)) return Array.prototype.forEach.call(peer, this.push.bind(this))
+  
+  // Peer is itself. This happens because other peer sent all his peers info,
+  // which this peer is part of
+  if(peer.port === this.state.port) return
+  
+  // Peer already exists
+  if(this.find(peer.name)) return
+  
+  // create a new state for this peer
+  this.peers[peer.name] = state(false, !!peer.seed, peer.hostname, peer.port)
+  
+  // if the peer is a seed, add it to the seeds object
+  if(!!peer.seed) this.seeds[peer.name] = this.peers[peer.name]
+  
+  // propagate events from the peer
+  propagate(this.peers[peer.name], this)
+  
+  // since we just added this peer, then emit the `new` peer event
+  this.emit('new', this.peers[peer.name])
 }
 
 /**
  * Get all peers that are identified as alive
  *
- * @returns {Array}
+ * @returns {array} alive_peers
  */
 peers.prototype.alive = function () {
   return utils.values(this.peers).filter(function (peer) {
@@ -83,7 +155,7 @@ peers.prototype.alive = function () {
 /**
  * Get all peers that are identified as dead
  *
- * @returns {Array}
+ * @returns {array} dead_peers
  */
 peers.prototype.dead = function () {
   return utils.values(this.peers).filter(function (peer) {
@@ -93,8 +165,6 @@ peers.prototype.dead = function () {
 
 /**
  * Go throught all peers and check suspicion of each
- *
- * @returns {Array}
  */
 peers.prototype.suspect = function () {
   utils.values(this.peers).forEach(function (peer) {

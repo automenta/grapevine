@@ -1,31 +1,59 @@
 {
-  "name": "gossip",
+  "name": "ase",
   "version": "0.1.0",
-  "description": "gossip protocol",
-  "contributors": [
-    "Bob Potter <bobby.potter@gmail.com>",
-    "Christopher Mooney <chris@dod.net>",
-    "Sérgio Ramos <mail@sergioramos.me>"
+  "description": "gossip-like protocol to maintain a distributed network of peers",
+  "keywords": [
+    "gossip",
+    "nodes",
+    "failure",
+    "detection",
+    "distributed",
+    "peer",
+    "network"
   ],
+  "homepage": "https://github.com/kordon/ase",
+  "bugs": {
+    "url": "http://github.com/kordon/ase/issues",
+    "email": "mail@sergioramos.me"
+  },
+  "licenses": [
+    {
+      "url": "https://raw.github.com/kordon/afd/master/license/bpot",
+      "type": "MIT"
+    },
+    {
+      "url": "https://raw.github.com/kordon/afd/master/license/kordon",
+      "type": "MIT"
+    }
+  ],
+  "contributors": [
+    "Sérgio Ramos <mail@sergioramos.me> (http://sergioramos.me/)",
+    "Bob Potter <bobby.potter@gmail.com>"
+  ],
+  "main": "src/ase.js",
+  "directories": {
+    "lib": "src"
+  },
   "repository": {
     "type": "git",
-    "url": "git://github.com/bpot/node-gossip.git"
+    "url": "git://github.com/kordon/ase.git"
   },
-  "main": "src/gossip.js",
+  "scripts": {
+    "test": "make test test-coveralls"
+  },
   "dependencies": {
     "component-type": "git://github.com/component/type.git",
-    "gscuttle": "git://github.com/kordon/gscuttle.git",
-    "gstate": "git://github.com/kordon/gstate.git",
-    "eventemitter2": "0.4.x",
-    "darius": "0.1.x",
-    "puid": "0.4.x"
+    "propagate": "0.2.x",
+    "json-body": "0.0.x",
+    "request": "2.27.x",
+    "longjohn": "0.2.x",
+    "afd": "0.2.x",
+    "sha1": "1.1.x"
   },
   "devDependencies": {
     "mocha-lcov-reporter": "0.0.x",
     "jscoverage": "0.3.x",
-    "component": "0.16.x",
-    "coveralls": "2.0.x",
-    "mocha": "1.10.x",
-    "chai": "1.6.x"
+    "coveralls": "2.1.x",
+    "mocha": "1.12.x"
   }
 }
