@@ -104,10 +104,7 @@ peers.prototype.ids = function () {
  * @returns {state}
  */
 peers.prototype.random = function (peers) {
-  if(type(peers) === 'undefined') peers = this.peers
-  if(peers === true) peers = this.seeds
-
-  return peers[Math.floor(Math.random()*(peers.length + 1))]
+  return peers[Math.floor(Math.random()*peers.length)]
 }
 
 /**

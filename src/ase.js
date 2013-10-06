@@ -86,7 +86,7 @@ ase.prototype.gossip = function (gossip) {
   // all known eers
   var peers = utils.values(this.peers.peers)
   // all known seeds
-  var seeds = this.peers.seeds
+  var seeds = utils.values(this.peers.seeds)
 
   // all alive peers
   var alive_peers = this.peers.alive()
@@ -99,7 +99,7 @@ ase.prototype.gossip = function (gossip) {
   var dead_peer = this.peers.random(dead_peers)
   // random seed
   var seed = this.peers.random(seeds)
-  
+
   // function to filter the identifications,
   // in order to preven us to send the identification of the peer
   // who we are sending all the identifications
