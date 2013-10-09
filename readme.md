@@ -4,6 +4,7 @@
 [![Build Status](https://secure.travis-ci.org/kordon/ase.png)](http://travis-ci.org/kordon/ase)
 [![Dependency Status](https://gemnasium.com/kordon/ase.png)](https://gemnasium.com/kordon/ase)
 [![Coverage Status](https://coveralls.io/repos/kordon/ase/badge.png?branch=master)](https://coveralls.io/r/kordon/ase?branch=master)
+[![Technical debt analysis](https://www.sidekickjs.com/r/kordon/ase/status_badge.svg)](https://www.sidekickjs.com/r/kordon/ase)
 
 **ase** implements a gossip-like protocol with failure detection
 
