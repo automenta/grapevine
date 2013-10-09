@@ -55,10 +55,10 @@ ase.prototype.start = function () {
     
     // start the gossip timer
     this.timer = setInterval(this.gossip.bind(this), 1000)
+    // callback
+    this.opts.callback(null, this)
     // handle seeds
     this.peers.push(this.opts.seeds.map(utils.seedit))
-    
-    this.opts.callback(null, this)
   }.bind(this))
   
   // if the http server is not provided, it's our responsability to start it
@@ -123,7 +123,7 @@ ase.prototype.gossip = function (gossip) {
   // * the choosen live peer is not a seed
   // * the number of live peers is smaller than the number of seeds
   if(!(alive_peer && !seeds[alive_peer] && alive_peers.length < seeds.length)) return
-  if(!(Math.random() < (Object.keys(this.seeds).length / Object.keys(peers).length))) return
+  if(!(Math.random() < (seeds.length / peers.length))) return
   
   // propagate to random seed
   this.server.propagate(seed, identifications.filter(filter(seed)))
