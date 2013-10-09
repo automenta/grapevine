@@ -105,6 +105,6 @@ state.prototype.beat = function () {
  */
 state.prototype.suspect = function () {
   if(this.local) return false
-  if(this.detector.phi() > 1) return dead(this)
+  if(this.detector.phi() > 2) return dead(this)
   return alive(this)
 }
