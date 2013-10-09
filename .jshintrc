@@ -1,0 +1,15 @@
+{
+  "browser": true,
+  "jquery": true,
+  "node": true,
+  "devel": true,
+  "asi": true,
+  "es5": true,
+  "quotmark": true,
+  "plusplus": true,
+  "noempty": true,
+  "newcap": true,
+  "latedef": true,
+  "indent": 2,
+  "eqeqeq": true
+}
