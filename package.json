@@ -31,6 +31,9 @@
     "Bob Potter <bobby.potter@gmail.com>"
   ],
   "main": "src/ase.js",
+  "bin" : {
+    "asex": "bin/example.js"
+  },
   "directories": {
     "lib": "src"
   },
