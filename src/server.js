@@ -60,7 +60,7 @@ server.prototype.propagate = function (to, identifications) {
   }}, function (e, req, body) {
     // we should ignore the error because if it failed, then it's because we're propagating to a dead
     // peer and/or the network is partitioned. afd handles that
-    if(e) return console.log('failed to propagate to peer %s', to.name())
+    if(e) return //console.log('failed to propagate to peer %s', to.name())
     // identify the peers replied
     this.peers.identify(body)
     // signal that the peer we just connected with is alive
