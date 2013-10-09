@@ -54,6 +54,8 @@
     "mocha-lcov-reporter": "0.0.x",
     "jscoverage": "0.3.x",
     "coveralls": "2.3.x",
-    "mocha": "1.13.x"
+    "mocha": "1.13.x",
+    "argv": "0.0.x",
+    "optimist": "0.6.x"
   }
 }

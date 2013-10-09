@@ -47,6 +47,24 @@ peer1.on('failed', function (peer) {
 })
 ```
 
+### cli example
+
+```sh
+$ node bin/example.js
+192.168.1.14:53873 started
+```
+```sh
+$ node bin/example.js --seeds=192.168.1.14:53873
+192.168.1.14:53888 started
+Found: 192.168.1.14:53873
+```
+```sh
+$ node bin/example.js --seeds=192.168.1.14:53873
+192.168.1.14:53897 started
+Found: 192.168.1.14:53873
+Found: 192.168.1.14:53888
+```
+
 ## license
 
  * Original [bpot/node-gossip](https://github.com/bpot/node-gossip) code is under the [MIT license](license/bpot)
