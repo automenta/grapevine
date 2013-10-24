@@ -4,7 +4,7 @@
 [![Build Status](https://secure.travis-ci.org/kordon/ase.png)](http://travis-ci.org/kordon/ase)
 [![Dependency Status](https://gemnasium.com/kordon/ase.png)](https://gemnasium.com/kordon/ase)
 [![Coverage Status](https://coveralls.io/repos/kordon/ase/badge.png?branch=master)](https://coveralls.io/r/kordon/ase?branch=master)
-[![Code Climate](https://codeclimate.com/repos/52693e3856b10210ef0255a5/badges/7ad45c31e7539acfdc68/gpa.png)](https://codeclimate.com/repos/52693e3856b10210ef0255a5/feed)
+[![Code Climate](https://codeclimate.com/github/kordon/ase.png)](https://codeclimate.com/github/kordon/ase)
 [![Technical debt analysis](https://www.sidekickjs.com/r/kordon/ase/status_badge.svg)](https://www.sidekickjs.com/r/kordon/ase)
 
 **ase** implements a gossip-like protocol with failure detection
