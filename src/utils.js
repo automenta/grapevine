@@ -19,10 +19,10 @@ utils.args = function () {
     if(type(argument) === 'object') args.server = argument
     if(Array.isArray(argument)) args.seeds = argument
   })
-  
-  if(args.server) agrs.srv_provided = true
+
+  if(args.server) args.srv_provided = true
   else args.server = http.createServer()
-  
+
   return args
 }
 
@@ -62,7 +62,7 @@ utils.send = function (res, status, body) {
     body = status
     status = 200
   }
-  
+
   res.statusCode = status
   res.end(body)
 }
