@@ -27,7 +27,8 @@
   ],
   "dependencies": {
     "json-over-tcp": "0.4.0",
-    "debug": "~0.7.4"
+    "debug": "~0.7.4",
+	"eventemitter2": ""
   },
   "main": "index.js",
   "scripts": {
