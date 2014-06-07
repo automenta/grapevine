@@ -1,9 +1,12 @@
 {
-  "name": "grapevine",
-  "description": "gossip protocol - a fork of gossiper module with some added features",
+  "name": "telepathine",
+  "description": "p2p data & event synchronization 'gossip' protocol",
   "version": "0.2.2",
-  "author": "Bob Potter <bobby.potter@gmail.com>",
   "contributors": [
+    {
+      "name": "Bob Potter",
+      "email": "bobby.potter@gmail.com"
+    },
     {
       "name": "Christopher Mooney",
       "email": "chris@dod.net"
@@ -15,6 +18,10 @@
     {
       "name": "Joshua Erickson",
       "email": "josh@snoj.us"
+    },
+    {
+      "name": "SeH", 
+      "email": "automenta@gmail.com"
     }
   ],
   "repository": {
@@ -23,12 +30,13 @@
   },
   "keywords": [
     "gossip",
-    "scuttlebutt"
+    "scuttlebutt",
+    "p2p", "synchronization", "event", "bus", "distributed", "mesh", "network", "share", "peer", "replication"
   ],
   "dependencies": {
     "json-over-tcp": "0.4.0",
     "debug": "~0.7.4",
-	"eventemitter2": ""
+    "eventemitter2": ""
   },
   "main": "index.js",
   "scripts": {
