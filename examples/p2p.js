@@ -18,7 +18,7 @@ for (var i = 0; i < numSeeds; i++) {
 	g.start();
 
 	g.on('update', function (peer, k, v) {
-		console.log("peer " + peer + " set " + k + " to " + v); // peer 127.0.0.1:9999 set somekey to somevalue
+		console.log(this.peer_name + " knows peer " + peer + " set " + k + " to " + v);
 	});
 }
 

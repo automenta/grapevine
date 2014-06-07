@@ -8,7 +8,7 @@ var a = new Gossiper(9000, []).start();
 var b = new Gossiper(9001, [":9000"]).start();
 
 a.on('started', function() {
-	a.hear('eventname', function(data, fromPeer) {
+	a.hearOnce('eventname', function(data, fromPeer) {
 		console.log('a received eventname=', data, 'from', fromPeer);
 		a.say('reply');
 	});
@@ -19,7 +19,7 @@ a.on('started', function() {
 
 b.on('started', function() {
 	b.say('eventname', 'eventdata');
-	b.hear('reply', function(data, fromPeer) {
+	b.hearOnce('reply', function(data, fromPeer) {
 		console.log('b received reply=', data, ' from ', fromPeer);
 	});
 });
