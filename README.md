@@ -14,6 +14,31 @@ Telepathine for Node.JS
 
 ## API
 
+### Constructor
+
+	new Telepathine(port, seeds, options)
+
+	Default Options:
+	
+		options = {
+			
+			// For IPv4 use [a.b.c.d]:port, ex: 192.168.0.100:1234
+			// For IPv6 use the format [ad:dre::ss]:port, ex: [::1]:9000
+			address: '127.0.0.1', // localhost
+			
+			// Whether to emit value change events on heartbeats
+			emitValueOnHeartBeat: false,
+			
+			// Manual Network address translation
+			addressMap: {
+				//key: value //key = address mapped from, value = address mapped to
+			},
+			
+			// Network ID, used to encrypt messages, secured from non-network message.  undefined=public, no encryption
+			network: undefined  //ex: "Preshared_Network_Key"
+		};	
+
+
 ### Methods
     
 #### start([callback]), stop()
