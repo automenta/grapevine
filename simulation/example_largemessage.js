@@ -3,8 +3,8 @@
 var T = require('../lib/telepathine.js').Telepathine;
 
 
-var a = new T(9000, []).start();
-var b = new T(9001, [":9000"]).start();
+var a = new T(9000, [], { network: 'n' } ).start();
+var b = new T(9001, [":9000"], { network: 'n' } ).start();
 
 function newLargeMessage(bytes) {
 	var b = new Buffer(bytes);
@@ -16,8 +16,7 @@ function newLargeMessage(bytes) {
 a.on('start', function () {
 
 	a.know('*', function (peer, v) {
-		var vsize = JSON.stringify(v).length;
-		console.log(this.peer_name + " knows " + peer + "'s " + this.event + "=" + ' (' + vsize + ' bytes)');
+		console.log(this.peer_name + " knows " + peer + "'s " + this.event + "=" + ' (' + v.length + ' bytes)');
 	});
 });
 
