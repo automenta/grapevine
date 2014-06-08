@@ -1,6 +1,11 @@
 Telepathine for Node.JS
 =======================
 
+[![NPM](https://nodei.co/npm/telepathine.png?downloads=true&stars=true)](https://nodei.co/npm/telepathine/)
+
+[![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
+[![Dependency Status](https://david-dm.org/automenta/telepathine.svg)](https://david-dm.org/automenta/telepathine)
+
 ## Features
 #### P2P "Gossip" protocol
 #### Shared memory (distributed hashtable)
@@ -12,9 +17,6 @@ Telepathine for Node.JS
 #### TCP with optional UDP mode (connection-less for small packets)
 #### Private Darknet with Pre-shared Network Encryption Key
 
-[![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
-[![Dependency Status](https://david-dm.org/automenta/telepathine.svg)](https://david-dm.org/automenta/telepathine)
-[![NPM](https://nodei.co/npm/telepathine.png?downloads=true&stars=true)](https://nodei.co/npm/telepathine/)
 ----
 
 ## API
