@@ -9,8 +9,8 @@ var b = new T(9001, [":9000"]).start();
 a.on('start', function () {
 
 	a.hearOnce('eventname', function (data, fromPeer) {
-		console.log('a received eventname=', data, 'from', fromPeer);
-		a.say('reply');
+		console.log('a received eventname=', data, 'from', fromPeer, ' ...replying');
+		a.say('reply', 'r');
 	});
 
 	a.hear('*', function (data, fromPeer) {
