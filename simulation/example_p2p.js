@@ -55,5 +55,11 @@ new T(startPort,
 			setInterval(function() {
 				that.set('x', Math.random());
 			}, options.heartBeatIntervalMS * 2);
-						
+				
+			/*
+			this.on('peer:*', function(x) {
+				console.log(this.event, x);
+			});
+			*/
+				   
 		}).start();
