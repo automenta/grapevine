@@ -207,10 +207,17 @@ See scripts in the **simulations/** directory for examples.
 * major code refactoring, too many people wrote too much code without proper coordination
 * convert tests to mocha
 * test edge cases
-* Cluster name -- dont allow peers to accidentally join the wrong cluster
+* Security
+  * Cluster name -- dont allow peers to accidentally join the wrong cluster
+  * Encryption
+  	* pre-shared key
 * The scuttlebutt paper mentions a couple things we don't current do:
   * congestion throttling
   * make digests only be random subsets
+* variable update rates for different peers; use default if unspecified in seed parameter
+* record traffic, bandwidth, & latency statistics
+* vary interval duration ('updateVariability' parameter) to temporally distribute traffic
+* minimize wire protocol
 
 
 ## References
