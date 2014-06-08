@@ -21,6 +21,8 @@ Telepathine for Node.JS
 
 ## API
 
+See scripts in the **simulations/** directory for examples.
+
 ### Constructor
 
 	new Telepathine(port, seeds, options)
@@ -28,26 +30,29 @@ Telepathine for Node.JS
 	Default Options:
 	
 		options = {
-			
+
 			// For IPv4 use [a.b.c.d]:port, ex: 192.168.0.100:1234
 			// For IPv6 use the format [ad:dre::ss]:port, ex: [::1]:9000
-			address: '127.0.0.1', // 127.0.0.1 = localhost
-			
-			// Network ID, used to encrypt messages, secured from non-network message.
-			// network =
-			// 		 undefined: public (no encryption)
-			//  	 [string]: activate encryption (default algorithm: AES-192)
-			network: undefined  //ex: "Preshared_Network_Key"
+			address: '127.0.0.1', // localhost
+
+			// Whether to emit value change events on heartbeats
+			emitValueOnHeartBeat: false,
 
 			// Manual Network address translation
 			addressMap: {
 				//key: value //key = address mapped from, value = address mapped to
 			},
 
-			// Whether to emit value change events on heartbeats
-			emitValueOnHeartBeat: false
-			
-		};	
+			// Network ID, used to encrypt messages, secured from non-network message.  undefined=public, no encryption
+			network: "Preshared_Network_Key",
+
+			udp: true,					//whether to run UDP server (recommended)
+
+			gossipIntervalMS: 2500, 	//how often (ms) to send gossip updates
+
+			heartbeatIntervalMS: 2500 	//how often (ms) to send heartbeat updates
+		
+		};
 
 
 ### Methods
@@ -225,17 +230,16 @@ This is a fork of **grapevine** which is a fork of the original **node-gossip**.
 >   a. The informal transmission of information, gossip, or rumor from person to person.
 >   b. A usually unrevealed source of confidential information.
 
-* json-over-tcp instead of msgpack
+* node.js sockets instead of json-over-tcp or msgpack
 * key/value pairs have optional ttl, which propagates to the other peers, it will cause keys to get deleted (although this is not an EXACT mechanism, so it shouldn't be used as such)
-* IPv6 support
+* IPv6 support (in-progress)
 * various bug fixes
 * UDP messaging for high performance, used for small messages
+* compact wire protocol
 
 node-gossip implements a gossip protocol w/failure detection, allowing you to create a fault-tolerant, self-managing cluster of node.js processes.  Each server in the cluster has it's own set of key-value pairs which are propogated to the others peers in the cluster.  The API allows you to make changes to the local state, listen for changes in state, listen for new peers and be notified when a peer appears to be dead or appears to have come back to life.
 
 The module is currently in 'hey it seems to work for me' state, there are probably some bugs lurking around. The API will probably change and suggestions on how to improve it are very welcome.
-
-See scripts in the **simulations/** directory for examples.
 
 
 ## TODO
@@ -253,7 +257,6 @@ See scripts in the **simulations/** directory for examples.
 * variable update rates for different peers; use default if unspecified in seed parameter
 * record traffic, bandwidth, & latency statistics
 * vary interval duration ('updateVariability' parameter) to temporally distribute traffic
-* minimize wire protocol
 * non-diff request protocol for sharing large objects
 * UDP multicast
 

@@ -1,7 +1,7 @@
 {
   "name": "telepathine",
   "description": "p2p data & event synchronization 'gossip' protocol",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "contributors": [
     {
       "name": "Bob Potter",
@@ -34,7 +34,6 @@
     "p2p", "synchronization", "event", "bus", "distributed", "mesh", "network", "share", "peer", "replication"
   ],
   "dependencies": {
-    "json-over-tcp": "0.4.0",
     "debug": "",
     "eventemitter2": "",
     "lodash": ""

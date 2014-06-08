@@ -5,9 +5,14 @@ var T = require('../lib/telepathine.js').Telepathine;
 var startPort = 9000;
 var numSeeds = 4;
 
+var options = {
+	gossipIntervalMS: 2500,
+	heartBeatIntervalMS: 2500
+};
+
 var seed = new T( startPort++,
 				  [ /* no seeds */ ], 
-				  { /* default configuration */ } 
+				  options 
 				).start();	
 
 // Create peers and point them at the seed 
@@ -16,7 +21,7 @@ var seed = new T( startPort++,
 for (var i = 0; i < numSeeds; i++) {
 
 	var g = new T(i + startPort + 1, 
-				  ['127.0.0.1:' + (startPort + i + 2)]).start();
+				  ['127.0.0.1:' + (startPort + i + 2)], options).start();
 
 	//event emitted when a remote peer sets a key to a value
 	g.on('set', function (peer, k, v) {
@@ -37,7 +42,7 @@ for (var i = 0; i < numSeeds; i++) {
 
 // Another peer which updates state after a delay
 new T(startPort, 
-      ['127.0.0.1:' + (startPort + 1)] )
+      ['127.0.0.1:' + (startPort + 1)], options )
 		.after(1000, function () {
 				
 			// indefinite memory
@@ -46,4 +51,9 @@ new T(startPort,
 			// temporary memory: 10 seconds from now this key will start to expire in the gossip net
 			this.set('somekey2', 'somevalue', Date.now() + 10000);
 			
+			var that = this;
+			setInterval(function() {
+				that.set('x', Math.random());
+			}, options.heartBeatIntervalMS * 2);
+						
 		}).start();
