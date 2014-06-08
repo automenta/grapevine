@@ -254,6 +254,7 @@ See scripts in the **simulations/** directory for examples.
 * record traffic, bandwidth, & latency statistics
 * vary interval duration ('updateVariability' parameter) to temporally distribute traffic
 * minimize wire protocol
+* non-diff request protocol for sharing large objects
 
 
 ## References
