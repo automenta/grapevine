@@ -36,7 +36,8 @@
   "dependencies": {
     "json-over-tcp": "0.4.0",
     "debug": "~0.7.4",
-    "eventemitter2": ""
+    "eventemitter2": "",
+    "lodash": ""
   },
   "devDependencies": {
 	"expresso": ""
