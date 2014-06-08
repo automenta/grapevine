@@ -2,15 +2,20 @@ Telepathine for Node.JS
 =======================
 
 ## Features
- * P2P "Gossip" protocol
- * Shared memory (distributed hashtable)
- * Distributed event bus
- * Incremental change-sets
- * Failure detection
- * Fault-tolerant
- * Self-managing cluster or mesh
- * TCP with optional UDP mode (connection-less for small packets)
- 
+#### P2P "Gossip" protocol
+#### Shared memory (distributed hashtable)
+#### Distributed event bus
+#### Incremental change-sets
+#### Failure detection
+#### Fault-tolerant
+#### Self-managing cluster or mesh
+#### TCP with optional UDP mode (connection-less for small packets)
+#### Private Darknet with Pre-shared Network Encryption Key
+
+[![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
+[![Dependency Status](https://david-dm.org/automenta/telepathine.svg)](https://david-dm.org/automenta/telepathine)
+[![NPM](https://nodei.co/npm/telepathine.png?downloads=true&stars=true)](https://nodei.co/npm/telepathine/)
+----
 
 ## API
 
@@ -24,18 +29,22 @@ Telepathine for Node.JS
 			
 			// For IPv4 use [a.b.c.d]:port, ex: 192.168.0.100:1234
 			// For IPv6 use the format [ad:dre::ss]:port, ex: [::1]:9000
-			address: '127.0.0.1', // localhost
+			address: '127.0.0.1', // 127.0.0.1 = localhost
 			
-			// Whether to emit value change events on heartbeats
-			emitValueOnHeartBeat: false,
-			
+			// Network ID, used to encrypt messages, secured from non-network message.
+			// network =
+			// 		 undefined: public (no encryption)
+			//  	 [string]: activate encryption (default algorithm: AES-192)
+			network: undefined  //ex: "Preshared_Network_Key"
+
 			// Manual Network address translation
 			addressMap: {
 				//key: value //key = address mapped from, value = address mapped to
 			},
+
+			// Whether to emit value change events on heartbeats
+			emitValueOnHeartBeat: false
 			
-			// Network ID, used to encrypt messages, secured from non-network message.  undefined=public, no encryption
-			network: undefined  //ex: "Preshared_Network_Key"
 		};	
 
 
