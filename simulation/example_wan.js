@@ -1,5 +1,3 @@
-//Run with: 	DEBUG=* node simulation/example_events.js
-
 var T = require('../lib/telepathine.js').Telepathine;
 
 var wanAddress   = '24.131.65.218'; //set this to your Internet IP as seen from other hosts

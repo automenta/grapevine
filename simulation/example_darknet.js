@@ -1,4 +1,3 @@
-//Run with: 	DEBUG=* node simulation/example_events.js
 var _ = require('lodash');
 var T = require('../lib/telepathine.js').Telepathine;
 

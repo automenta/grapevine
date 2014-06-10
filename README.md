@@ -91,7 +91,7 @@ See scripts in the **simulations/** directory for examples.
  * receives 'set' events for a given key.  eventname can use EventEmitter2 wildcard
 
 #### believe(key, handler(peer, value))
- * receives 'set' events for a specific key then call Telepathine.set -- setting any received value in the local key/value state, rather than the default remote storage
+ * receives 'set' events for a specific key then call Telepathine.set -- setting any received value in the local key/value state, in addition to the remote peer's key/value
 
 #### after(delayMS, callback)
  * execute a callback after a time delay (ms) after a peer has start(), or if it's already start(), execute after a time delay

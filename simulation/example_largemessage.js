@@ -1,5 +1,3 @@
-//Run with: 	DEBUG=* node simulation/example_events.js
-
 var T = require('../lib/telepathine.js').Telepathine;
 
 
