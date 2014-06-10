@@ -58,8 +58,8 @@ See scripts in the **simulations/** directory for examples.
 ### Methods
     
 #### start([callback]), stop()
- * start and stop the peer
-	
+ * start and stop the peer.  may be called repeatedly, event handlers will be maintained
+
 #### set(key, value[, expiresAt]) 
  * set local key/value state, broadcasting to peers.  expiresAt is a unixtime (millisecond resolution)
 	
@@ -89,6 +89,15 @@ See scripts in the **simulations/** directory for examples.
 
 #### know(key, handler(peer, value))
  * receives 'set' events for a given key.  eventname can use EventEmitter2 wildcard
+
+#### believe(key, handler(peer, value))
+ * receives 'set' events for a specific key then call Telepathine.set -- setting any received value in the local key/value state, rather than the default remote storage
+
+#### after(delayMS, callback)
+ * execute a callback after a time delay (ms) after a peer has start(), or if it's already start(), execute after a time delay
+
+#### every(intervalMS, callback)
+ * repeat a callback every time interval (ms) after a peer has start(), or if it's already start(), begin repeating
 
 #### on(eventname, handler)
  * handle peer events, described below.  eventname can use EventEmitter2 wildcard
