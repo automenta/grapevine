@@ -10,7 +10,7 @@ a.on('start', function () {
 
 	a.hearOnce('eventname', function (data, fromPeer) {
 		console.log('a received eventname=', data, 'from', fromPeer, ' ...replying');
-		a.say('reply', 'r');
+		a.say('reply');
 	});
 
 	a.hear('*', function (data, fromPeer) {

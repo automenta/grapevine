@@ -36,7 +36,8 @@
   "dependencies": {
     "debug": "",
     "eventemitter2": "",
-    "lodash": ""
+    "lodash": "",
+	"chokidar": ""
   },
   "devDependencies": {
 	"expresso": ""

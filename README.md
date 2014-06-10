@@ -257,6 +257,8 @@ The module is currently in 'hey it seems to work for me' state, there are probab
 * variable update rates for different peers; use default if unspecified in seed parameter
 * record traffic, bandwidth, & latency statistics
 * vary interval duration ('updateVariability' parameter) to temporally distribute traffic
+* file system mapped key/values
+* addressAlias - array of addresses to map to the specified 'address' option, more convenient notation than specifyign a complete addressMap
 * non-diff request protocol for sharing large objects
 * UDP multicast
 
