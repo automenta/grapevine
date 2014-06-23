@@ -29,7 +29,7 @@ a.on('start', function () {
 	var i = 0;
 	setInterval(function() {	a.set('x', i++);	}, 1000);
 
-	a.know('x', function(peer, d) { console.log('a recv', d, a.livePeers());	});
+	a.know('x', function(peer,k, d) { console.log('a recv', d, a.livePeers());	});
 	
 });
 
@@ -38,12 +38,12 @@ b.on('start', function () {
 	var i = 0;
 	setInterval(function() {	b.set('x', i++);	}, 1000);
 	
-	b.know('x', function(peer, d) { console.log('b recv', d, b.livePeers() );	});
+	b.know('x', function(peer,k, d) { console.log('b recv', d, b.livePeers() );	});
 	
 });
 
 b.on('start', function () {
 
-	c.know('x', function(peer, d) { console.log('c recv', d, c.livePeers() );	});
+	c.know('x', function(peer,k, d) { console.log('c recv', d, c.livePeers() );	});
 	
 });

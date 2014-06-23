@@ -29,13 +29,13 @@ for (var i = 0; i < numSeeds; i++) {
 	});
 	
 	//convenience method for key/value change events
-	g.know('somekey', function (peer, v) {
+	g.know('somekey', function (peer, k, v) {
 		console.log(this.peer_name + " knows via know('somekey'.. that peer " + peer + " set somekey=" + v);
 	});
 	
 	//convenience method for key change events, using wildcard
-	g.know('*', function (peer, v) {
-		console.log(this.peer_name + " knows via know('*'.. that peer " + peer + " set " + this.event + "=" + v);
+	g.know('*', function (peer, k, v) {
+		console.log(this.peer_name + " knows via know('*'.. that peer " + peer + " set " + this.event +", "+ k +"=" + v);
 	});
 }
 

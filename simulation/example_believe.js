@@ -19,7 +19,7 @@ b.on('start', function () {
 	
 	console.log('b before:', b.get('x'));  //should not be available from .get()
 
-	b.believe('x', function(peer, value) {
+	b.believe('x', function(peer, key, value, ttl) {
 		console.log('b believes ', peer, ' about x=', value);
 		console.log('b after:', b.get('x'), ' == ', value);  //should not be available from .get()
 	});
