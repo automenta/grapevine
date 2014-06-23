@@ -87,10 +87,10 @@ See scripts in the **simulations/** directory for examples.
 #### hearOnce(eventname, handler(data, fromPeer) )
  * receive a 'say' event once.
 
-#### know(key, handler(peer, value))
+#### know(key, handler(peer_name, key, value, expiresAt))
  * receives 'set' events for a given key.  eventname can use EventEmitter2 wildcard
 
-#### believe(key, handler(peer, value))
+#### believe(key, handler(peer_name, key, value, expiresAt))
  * receives 'set' events for a specific key then call Telepathine.set -- setting any received value in the local key/value state, in addition to the remote peer's key/value
 
 #### after(delayMS, callback)
@@ -112,16 +112,16 @@ See scripts in the **simulations/** directory for examples.
 #### on('stop', function(peer) {})
  * local peer stopped
 
-#### on('set', function(peer_name, key, value) {})	
+#### on('set', function(peer_name, key, value, expiresAt) {})	
  * value set
 
-#### on('set:[key]', function(peer_name, value) {})	
+#### on('set:[key]', function(peer_name, key, value, expiresAt) {})	
  * value set, allows using EventEmitter2 wildcards
 
 #### on('say:[eventname]', function(parameter, fromPeer) {})	
  * received remote 'say' event, allows using EventEmitter2 wildcards.  a peer does not receive its own 'say' events.
 
-#### on('key:expired', function(peer_name, key, value, ttl) {})	
+#### on('key:expired', function(peer_name, key, value, expiresAt) {})	
  * a key has expired
 
 #### on('peer:new', function(peerstate) {})
@@ -166,13 +166,13 @@ See scripts in the **simulations/** directory for examples.
 		});
 
 		//convenience method for key/value change events
-		g.know('somekey', function (peer, v) {
+		g.know('somekey', function (peer, k, v) {
 			console.log(this.peer_name + " knows via know('somekey'.. that peer " + peer + " set somekey=" + v);
 		});
 
 		//convenience method for key change events, using wildcard
-		g.know('*', function (peer, v) {
-			console.log(this.peer_name + " knows via know('*'.. that peer " + peer + " set " + this.event + "=" + v);
+		g.know('*', function (peer,k, v) {
+			console.log(this.peer_name + " knows via know('*'.. that peer " + peer + " set " + this.event + "," + k + "=" + v);
 		});
 	}
 

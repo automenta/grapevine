@@ -13,7 +13,7 @@ function newLargeMessage(bytes) {
 
 a.on('start', function () {
 
-	a.know('*', function (peer, v) {
+	a.know('*', function (peer, k, v) {
 		console.log(this.peer_name + " knows " + peer + "'s " + this.event + "=" + ' (' + v.length + ' bytes)');
 	});
 });
