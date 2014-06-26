@@ -72,6 +72,9 @@ See scripts in the **simulations/** directory for examples.
 #### getRemoteKeys(peer)	
  * get all keys that have been provided by a particular peer
 
+#### addPeer(address)
+ * on success returns true
+
 #### allPeers()
     
 #### livePeers()
